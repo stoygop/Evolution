@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Experimental real-time 2D simulation of asexual foragers competing for food."
+    />
+    <title>Evolution Sandbox</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="toolbar">
+        <div class="brand">
+          <h1>Evolution Sandbox</h1>
+          <p>V1 asexual foragers. Size is the circle. Color runs from blue (slow) to rust (fast).</p>
+        </div>
+        <div class="controls">
+          <button id="pause" type="button">Pause</button>
+          <div class="speeds" role="group" aria-label="Simulation speed">
+            <button type="button" data-speed="1" aria-pressed="true">1×</button>
+            <button type="button" data-speed="5" aria-pressed="false">5×</button>
+            <button type="button" data-speed="20" aria-pressed="false">20×</button>
+            <button type="button" data-speed="100" aria-pressed="false">100×</button>
+          </div>
+          <button id="restart" type="button">Restart</button>
+          <span id="clock" class="clock">0.0s · 1×</span>
+        </div>
+      </header>
+
+      <div class="stage">
+        <div class="world-wrap">
+          <canvas id="world" aria-label="Simulation world"></canvas>
+        </div>
+        <aside id="inspector" class="panel">
+          <h2>Inspector</h2>
+          <p id="inspector-empty">Click a creature. The dashed ring is how far it can see.</p>
+          <p id="inspector-dead" hidden></p>
+          <div id="inspector-fields" hidden>
+            <div class="meter" aria-hidden="true"><span id="ins-meter"></span></div>
+            <dl>
+              <div><dt>Id</dt><dd id="ins-id"></dd></div>
+              <div><dt>Parent</dt><dd id="ins-parent"></dd></div>
+              <div><dt>Generation</dt><dd id="ins-generation"></dd></div>
+              <div><dt>Age</dt><dd id="ins-age"></dd></div>
+              <div><dt>Energy</dt><dd id="ins-energy"></dd></div>
+              <div><dt>Food eaten</dt><dd id="ins-eaten"></dd></div>
+              <div><dt>Offspring</dt><dd id="ins-offspring"></dd></div>
+              <div><dt>Speed</dt><dd id="ins-speed"></dd></div>
+              <div><dt>Vision</dt><dd id="ins-vision"></dd></div>
+              <div><dt>Size</dt><dd id="ins-size"></dd></div>
+            </dl>
+          </div>
+        </aside>
+      </div>
+
+      <section class="readout panel" aria-label="Population statistics">
+        <dl class="stats">
+          <div><dt>Population</dt><dd id="stat-pop">0</dd></div>
+          <div><dt>Food</dt><dd id="stat-food">0</dd></div>
+          <div><dt>Avg generation</dt><dd id="stat-gen">0</dd></div>
+          <div><dt>Avg speed</dt><dd id="stat-speed">0</dd></div>
+          <div><dt>Avg vision</dt><dd id="stat-vision">0</dd></div>
+          <div><dt>Avg size</dt><dd id="stat-size">0</dd></div>
+        </dl>
+        <canvas id="charts" aria-label="History of population, average speed, average vision, and average size"></canvas>
+      </section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
