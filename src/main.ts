@@ -7,6 +7,7 @@ import { maxEnergy } from './sim/genome.ts'
 import { summarize } from './sim/stats.ts'
 import type { World } from './sim/types.ts'
 import { createWorld, findCreature, pickCreature, stepWorld } from './sim/world.ts'
+import { downloadRunData, type RunDataFormat } from './ui/export-run.ts'
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector)
@@ -30,6 +31,8 @@ const chartContext: CanvasRenderingContext2D = chartCtx
 
 const pauseButton = required<HTMLButtonElement>('#pause')
 const restartButton = required<HTMLButtonElement>('#restart')
+const downloadButton = required<HTMLButtonElement>('#download-run')
+const exportFormat = required<HTMLSelectElement>('#export-format')
 const clock = required<HTMLElement>('#clock')
 const speedButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-speed]'))
 
@@ -92,6 +95,10 @@ function restart(): void {
 
 pauseButton.addEventListener('click', () => setPaused(!paused))
 restartButton.addEventListener('click', restart)
+downloadButton.addEventListener('click', () => {
+  const format: RunDataFormat = exportFormat.value === 'json' ? 'json' : 'csv'
+  downloadRunData(world.history, format)
+})
 for (const button of speedButtons) {
   button.addEventListener('click', () => {
     const next = Number(button.dataset.speed)
@@ -101,7 +108,13 @@ for (const button of speedButtons) {
 
 window.addEventListener('keydown', (event) => {
   if (event.code !== 'Space' || event.repeat) return
-  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
+  if (
+    event.target instanceof HTMLInputElement ||
+    event.target instanceof HTMLTextAreaElement ||
+    event.target instanceof HTMLSelectElement
+  ) {
+    return
+  }
   event.preventDefault()
   setPaused(!paused)
 })

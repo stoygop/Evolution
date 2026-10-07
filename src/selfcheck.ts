@@ -13,6 +13,7 @@ import {
 import { mulberry32 } from './sim/rng.ts'
 import type { Genome } from './sim/types.ts'
 import { addCreature, addFood, createWorld, stepWorld } from './sim/world.ts'
+import { formatRunData } from './ui/export-run.ts'
 
 const failures: string[] = []
 
@@ -214,6 +215,27 @@ function populationChanges(): void {
   )
 }
 
+function exportHistory(): void {
+  const header = 'time,population,food,avgGeneration,avgSpeed,avgVision,avgSize'
+  const emptyCsv = formatRunData([], 'csv')
+  assert(emptyCsv === `${header}\n`, 'empty CSV should be a header only')
+  const emptyJson = JSON.parse(formatRunData([], 'json')) as unknown[]
+  assert(Array.isArray(emptyJson) && emptyJson.length === 0, 'empty JSON should be an empty array')
+
+  const world = createWorld(mulberry32(11), { creatures: 20, food: 15 })
+  runSteps(world, Math.round(8 / dt), 12)
+  assert(world.history.length > 2, 'export fixture should collect more than the initial sample')
+  const csvLines = formatRunData(world.history, 'csv').trim().split('\n')
+  assert(csvLines.length === world.history.length + 1, 'CSV should have one row per sample plus a header')
+  assert(csvLines[0] === header, 'CSV header should match the sampled stats')
+  const records = JSON.parse(formatRunData(world.history, 'json')) as Array<Record<string, number>>
+  assert(records.length === world.history.length, 'JSON should have one record per sample')
+  const populations = records.map((record) => record.population)
+  assert(populations.some((value) => value !== populations[0]), 'exported population should change across samples')
+  assert(records[0].time === world.history[0].time, 'export should use the stored sample time')
+  assert(records[records.length - 1].food === world.history[world.history.length - 1].food, 'export should use stored food counts')
+}
+
 function acceleratedThroughput(): void {
   const world = createWorld(mulberry32(99))
   const steps = Math.round(100 / dt)
@@ -237,6 +259,7 @@ seeksAndEats()
 ignoresUnseenFood()
 reproducesWithMutation()
 populationChanges()
+exportHistory()
 acceleratedThroughput()
 
 if (failures.length > 0) {

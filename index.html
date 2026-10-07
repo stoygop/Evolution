@@ -26,6 +26,13 @@
             <button type="button" data-speed="100" aria-pressed="false">100×</button>
           </div>
           <button id="restart" type="button">Restart</button>
+          <div class="export">
+            <select id="export-format" aria-label="Run data format">
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <button id="download-run" type="button">Download Run Data</button>
+          </div>
           <span id="clock" class="clock">0.0s · 1×</span>
         </div>
       </header>

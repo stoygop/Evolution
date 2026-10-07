@@ -16,7 +16,7 @@ npm run check   # typecheck and headless simulation checks
 npm run build   # production bundle in dist/
 ```
 
-Controls: Pause, 1× / 5× / 20× / 100×, Restart. Click a creature to inspect it. Space pauses when focus is not in a text field. Accelerated speeds run many simulation ticks per frame and draw once per frame.
+Controls: Pause, 1× / 5× / 20× / 100×, Restart, and Download Run Data (CSV or JSON of the samples already stored for the charts). Click a creature to inspect it. Space pauses when focus is not in a text field. Accelerated speeds run many simulation ticks per frame and draw once per frame.
 
 ## Layout
 
