@@ -1,4 +1,3 @@
-import { CONFIG } from '../config.ts'
 import type { StatsSample, World } from './types.ts'
 
 export function summarize(world: World): StatsSample {
@@ -25,15 +24,4 @@ export function summarize(world: World): StatsSample {
     avgVision: vision * inv,
     avgSize: size * inv,
   }
-}
-
-export function recordSample(world: World, dt: number, force = false): void {
-  if (!force) {
-    world.sampleAccumulator += dt
-    if (world.sampleAccumulator < CONFIG.sim.historySampleInterval) return
-    world.sampleAccumulator -= CONFIG.sim.historySampleInterval
-  }
-  world.history.push(summarize(world))
-  const extra = world.history.length - CONFIG.sim.historyLimit
-  if (extra > 0) world.history.splice(0, extra)
 }

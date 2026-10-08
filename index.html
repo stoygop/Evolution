@@ -15,7 +15,7 @@
       <header class="toolbar">
         <div class="brand">
           <h1>Evolution Sandbox</h1>
-          <p>V1 asexual foragers. Size is the circle. Color runs from blue (slow) to rust (fast).</p>
+          <p>Foragers. Size is the circle. Color runs from blue (slow) to rust (fast).</p>
         </div>
         <div class="controls">
           <button id="pause" type="button">Pause</button>
@@ -30,10 +30,14 @@
             <select id="export-format" aria-label="Run data format">
               <option value="csv">CSV</option>
               <option value="json">JSON</option>
+              <option value="lifetimes">Lifetimes CSV</option>
             </select>
             <button id="download-run" type="button">Download Run Data</button>
           </div>
-          <span id="clock" class="clock">0.0s · 1×</span>
+          <span class="meta-readout">
+            <span id="clock" class="clock">0.0s · 1×</span>
+            <span id="run-meta" class="run-meta">—</span>
+          </span>
         </div>
       </header>
 
@@ -41,38 +45,125 @@
         <div class="world-wrap">
           <canvas id="world" aria-label="Simulation world"></canvas>
         </div>
-        <aside id="inspector" class="panel">
+        <aside class="side">
+          <section class="panel env" aria-label="Experiment controls">
+            <div class="env-head">
+              <h2>Experiment</h2>
+              <button id="env-reset" type="button">Reset to V1 Defaults</button>
+            </div>
+            <p class="env-note">Applies immediately. Restart starts a new population with these settings.</p>
+            <h3>Environment</h3>
+            <div id="env-fields"></div>
+            <h3>Evolution constraints</h3>
+            <div id="constraint-fields"></div>
+            <h3>Reproduction</h3>
+            <label class="env-check"><input id="litter-energy-limited" type="checkbox"> Energy limited litter</label>
+            <div class="mode-toggle" role="group" aria-label="Reproduction">
+              <button id="mode-asexual" type="button" aria-pressed="true">Asexual</button>
+              <button id="mode-sexual" type="button" aria-pressed="false">Sexual</button>
+            </div>
+            <div id="mating-fields"></div>
+          </section>
+          <section id="inspector" class="panel">
           <h2>Inspector</h2>
-          <p id="inspector-empty">Click a creature. The dashed ring is how far it can see.</p>
+          <p id="inspector-empty">Click a creature. The cream ring is food vision. The blue ring is mate detection.</p>
           <p id="inspector-dead" hidden></p>
           <div id="inspector-fields" hidden>
             <div class="meter" aria-hidden="true"><span id="ins-meter"></span></div>
             <dl>
               <div><dt>Id</dt><dd id="ins-id"></dd></div>
               <div><dt>Parent</dt><dd id="ins-parent"></dd></div>
+              <div><dt>Parent B</dt><dd id="ins-parent-b"></dd></div>
               <div><dt>Generation</dt><dd id="ins-generation"></dd></div>
               <div><dt>Age</dt><dd id="ins-age"></dd></div>
               <div><dt>Energy</dt><dd id="ins-energy"></dd></div>
               <div><dt>Food eaten</dt><dd id="ins-eaten"></dd></div>
               <div><dt>Offspring</dt><dd id="ins-offspring"></dd></div>
+              <div><dt>Matings</dt><dd id="ins-matings"></dd></div>
               <div><dt>Speed</dt><dd id="ins-speed"></dd></div>
-              <div><dt>Vision</dt><dd id="ins-vision"></dd></div>
+              <div><dt>Food vision</dt><dd id="ins-vision"></dd></div>
+              <div><dt>Mate detection</dt><dd id="ins-mate-detection"></dd></div>
               <div><dt>Size</dt><dd id="ins-size"></dd></div>
+              <div><dt>Offspring investment</dt><dd id="ins-investment"></dd></div>
+              <div><dt>Eligible</dt><dd id="ins-eligible"></dd></div>
+              <div><dt>Behavior</dt><dd id="ins-behavior"></dd></div>
+              <div><dt>Mate target</dt><dd id="ins-mate-target"></dd></div>
             </dl>
           </div>
+          </section>
         </aside>
       </div>
 
-      <section class="readout panel" aria-label="Population statistics">
-        <dl class="stats">
-          <div><dt>Population</dt><dd id="stat-pop">0</dd></div>
-          <div><dt>Food</dt><dd id="stat-food">0</dd></div>
-          <div><dt>Avg generation</dt><dd id="stat-gen">0</dd></div>
-          <div><dt>Avg speed</dt><dd id="stat-speed">0</dd></div>
-          <div><dt>Avg vision</dt><dd id="stat-vision">0</dd></div>
-          <div><dt>Avg size</dt><dd id="stat-size">0</dd></div>
-        </dl>
-        <canvas id="charts" aria-label="History of population, average speed, average vision, and average size"></canvas>
+      <section class="dashboard panel" aria-label="Analysis">
+        <div class="dash-bar">
+          <div class="tabs" role="tablist" aria-label="Analysis views">
+            <button id="tab-evolution" type="button" role="tab" aria-selected="true">Evolution</button>
+            <button id="tab-ecology" type="button" role="tab" aria-selected="false">Ecology</button>
+            <button id="tab-distribution" type="button" role="tab" aria-selected="false">Distribution</button>
+            <button id="tab-relationships" type="button" role="tab" aria-selected="false">Relationships</button>
+            <button id="tab-fitness" type="button" role="tab" aria-selected="false">Fitness</button>
+            <button id="tab-demography" type="button" role="tab" aria-selected="false">Lifetime</button>
+          </div>
+          <dl class="stats">
+            <div><dt>Population</dt><dd id="stat-pop">0</dd></div>
+            <div><dt>Food</dt><dd id="stat-food">0</dd></div>
+            <div><dt>Avg generation</dt><dd id="stat-gen">0</dd></div>
+            <div><dt>Avg speed</dt><dd id="stat-speed">0</dd></div>
+            <div><dt>Avg vision</dt><dd id="stat-vision">0</dd></div>
+            <div><dt>Avg size</dt><dd id="stat-size">0</dd></div>
+          </dl>
+        </div>
+        <p id="safety-note" class="safety-note" hidden></p>
+        <div class="dash-tools">
+          <div id="tools-series">
+            <label><input id="ov-mean" type="checkbox" checked> Mean</label>
+            <label><input id="ov-median" type="checkbox"> Median</label>
+            <label><input id="ov-minmax" type="checkbox" checked> Min/max</label>
+            <label><input id="ov-sd1" type="checkbox" checked> ±1 SD</label>
+            <label><input id="ov-sd2" type="checkbox"> ±2 SD</label>
+            <label>X
+              <select id="x-mode" aria-label="Chart x axis">
+                <option value="generation">Average generation</option>
+                <option value="time">Simulation time</option>
+              </select>
+            </label>
+            <label>Window <select id="x-span" aria-label="Visible history"></select></label>
+            <button id="clear-pin" type="button">Clear pin</button>
+          </div>
+          <div id="tools-dist" hidden>
+            <label>Trait <select id="dist-trait" aria-label="Distribution trait"></select></label>
+          </div>
+          <div id="tools-scatter" hidden>
+            <label>X <select id="scatter-x" aria-label="Scatter x trait"></select></label>
+            <label>Y <select id="scatter-y" aria-label="Scatter y trait"></select></label>
+          </div>
+          <div id="tools-fitness" hidden>
+            <label>Trait <select id="fit-trait" aria-label="Fitness trait"></select></label>
+          </div>
+          <div id="y-controls"></div>
+        </div>
+        <div class="dash-stage">
+          <canvas id="charts" aria-label="Experiment charts"></canvas>
+          <aside id="leaders" class="leaders" hidden>
+            <h2>Longevity leaders</h2>
+            <div id="leaders-body"></div>
+            <div id="life-card" hidden>
+              <div class="snapshot-head">
+                <h2>Lifetime record</h2>
+                <button id="life-card-close" type="button">Close</button>
+              </div>
+              <dl id="life-card-body"></dl>
+            </div>
+          </aside>
+          <aside id="snapshot" class="snapshot" hidden>
+            <div class="snapshot-head">
+              <h2>Experiment snapshot</h2>
+              <button id="snapshot-clear" type="button">Clear pin</button>
+            </div>
+            <dl id="snapshot-body"></dl>
+          </aside>
+          <div id="dash-tip" class="dash-tip" hidden></div>
+        </div>
       </section>
     </div>
     <script type="module" src="/src/main.ts"></script>

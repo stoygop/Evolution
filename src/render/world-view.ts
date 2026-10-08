@@ -78,6 +78,13 @@ export function renderWorld(
   if (selectedIndex >= 0) {
     const creature = creatures[selectedIndex]
     ctx.beginPath()
+    ctx.arc(creature.x, creature.y, creature.genome.mateDetection, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(126, 186, 232, 0.45)'
+    ctx.lineWidth = 1.25 / scale
+    ctx.setLineDash([2 / scale, 7 / scale])
+    ctx.stroke()
+
+    ctx.beginPath()
     ctx.arc(creature.x, creature.y, creature.genome.vision, 0, Math.PI * 2)
     ctx.strokeStyle = 'rgba(239, 231, 214, 0.28)'
     ctx.lineWidth = 1.25 / scale
